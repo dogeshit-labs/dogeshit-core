@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@drizzle/store": "^1.5.3",
+    "@harmony-js/utils": "^0.1.56",
+    "@openzeppelin/contracts": "^4.1.0",
+    "@truffle/hdwallet-provider": "^1.4.1",
+    "path": "^0.12.7",
+    "tslib": "^2.2.0"
+  },
+  "devDependencies": {
+    "@harmony-js/core": "^0.1.57",
+    "dotenv": "^10.0.0",
+    "solhint": "^3.3.6"
+  }
+}
