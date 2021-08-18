@@ -1,1 +1,0 @@
-var ShitPileAddress = "0x5e256C959A948504Adb0DA9947Fa67C6bC3DBe8b";

@@ -1,1 +1,0 @@
-var FakeDogeAddress = "0x6E7C0c001C61c80f00dd1b1029edE92fB6f59BbA";

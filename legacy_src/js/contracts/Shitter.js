@@ -1,1 +1,0 @@
-var ShitterAddress = "0x0B6a99488c3E5607E06ad89a01126688E5A054de";
