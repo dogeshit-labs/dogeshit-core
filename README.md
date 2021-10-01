@@ -14,8 +14,8 @@ their Dogecoin early on.
 
 ## Relevant Repositories
 
-[React Interface](https://github.com/dogeshit-labs/dogeshit-interface)
-[Manifesto (Non-Technical Primer)](https://github.com/dogeshit-labs/dogeshit-manifesto)
+- [React Interface](https://github.com/dogeshit-labs/dogeshit-interface)
+- [Manifesto (Non-Technical Primer)](https://github.com/dogeshit-labs/dogeshit-manifesto)
 
 ## `DogeShit.sol`
 
