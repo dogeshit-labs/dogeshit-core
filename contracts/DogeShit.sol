@@ -32,4 +32,7 @@ contract DogeShit is AccessControl, ERC20 {
 		_burn(from, amount);
 	}
 
+	function decimals() public view virtual override returns (uint8) {
+        return 9;
+  }
 }

@@ -63,7 +63,7 @@ module.exports = {
       },
     },
     testnet: {
-      network_id: "2", // Any network (default: none)
+      network_id: "2",
       provider: () => {
         const truffleProvider = new TruffleProvider(
           testnet_url,

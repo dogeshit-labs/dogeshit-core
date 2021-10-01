@@ -8,8 +8,8 @@ pragma solidity ^0.8.0;
 library DecimalMath {
 
     /* Number of decimal places in the representations. */
-    uint8 public constant decimals = 18;
-    uint8 public constant highPrecisionDecimals = 27;
+    uint8 public constant decimals = 9;
+    uint8 public constant highPrecisionDecimals = 24;
 
     /* The number representing 1.0. */
     uint public constant UNIT = 10**uint(decimals);
