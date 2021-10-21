@@ -92,8 +92,8 @@ contract ShitFountain {
 		withdraw_rewards();
 		stake[msg.sender] = stake[msg.sender] - amount;
 		reward_tally[msg.sender] = reward_tally[msg.sender] - (reward_per_token.multiplyDecimalRoundPrecise(amount.decimalToPreciseDecimal())).preciseDecimalToDecimal();
-		DogeShit.transfer(msg.sender, amount);
 		total_stake = total_stake - amount;
+		DogeShit.transfer(msg.sender, amount);
 	}
 
 	function reward_per_block() public view returns (uint256) {
