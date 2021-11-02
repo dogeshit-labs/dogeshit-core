@@ -1,32 +1,32 @@
-const FakeDoge = artifacts.require("FakeDoge");
+const OtherDoge = artifacts.require("OtherDoge");
 
-contract("FakeDoge inialization", async (accounts) => {
+contract("OtherDoge initialization", async (accounts) => {
   it("Should have 8 decimals", async () =>
-    FakeDoge.deployed()
+    OtherDoge.deployed()
       .then((instance) => instance.decimals())
       .then((decimals) => {
         assert.equal(decimals.valueOf(), 8, "The number of decimals wasn't 8");
       }));
 
-  it("Should initially have 420 FakeDoge", async () =>
-    FakeDoge.deployed()
+  it("Should initially have 6900 OtherDoge", async () =>
+    OtherDoge.deployed()
       .then((instance) => instance.totalSupply())
       .then((supply) => {
         assert.equal(
           supply.valueOf(),
-          420 * 10 ** 8,
-          "The initial supply wasn't 420 FakeDoge"
+          6900 * 10 ** 8,
+          "The initial supply wasn't 6900 OtherDoge"
         );
       }));
 
   it("Deployer should have all tokens", async () =>
-    FakeDoge.deployed()
+    OtherDoge.deployed()
       .then((instance) => instance.balanceOf(accounts[0]))
       .then((balance) => {
         assert.equal(
           balance.valueOf(),
-          420 * 10 ** 8,
-          "The deployer account did not have 420 FakeDoge"
+          6900 * 10 ** 8,
+          "The deployer account did not have 6900 OtherDoge"
         );
       }));
 });

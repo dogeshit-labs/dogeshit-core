@@ -1,15 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "./interfaces/IDogeShit.sol";
 import "./DecimalMath.sol";
 
-contract ShitFountain {
+/** @title ShitFountain
+		@notice The contract that handles the staking rewards.
+		@dev This contract relies on some of the <code>uint256</code> being represented as PreciseDecimals
+			and Decimals as per the DecimalMath contract. Decimals and PreciseDecimals are incompatible with each other,
+			with the Decimal representation having 9 decimal places, and the PreciseDecimal representation having 24 decimal
+			places.
+*/
+contract ShitFountain is AccessControl {
 
 	using DecimalMath for uint256;
-
-	address public constant pit = 0x7bDeF7Bdef7BDeF7BDEf7bDef7bdef7bdeF6E7AD;
 
 	IDogeShit public DogeShit;
 
@@ -21,12 +27,29 @@ contract ShitFountain {
 	mapping(address => uint256) public stake; // int
 	mapping(address => uint256) public reward_tally; //int
 
-	function init_shit(address shit_address) public {
+	bytes32 public constant INIT = keccak256("INIT");
+
+	/** @dev The sender will be granted with the INIT role. <code>init_shit</code> should be called immediately
+				after the Dogeshit contract is deployed. Doing so will renounce this role.
+	*/
+	constructor() {
+		_setupRole(INIT, msg.sender);
+	}
+
+	/** @param shit_address The address of the Dogeshit contract.
+			@notice This function should only be called once by the deployer during deployment.
+			@dev This function should be called immediately after the Dogeshit contract is deployed.
+	*/
+	function init_shit(address shit_address) public onlyRole(INIT) {
 		DogeShit = IDogeShit(shit_address);
 		genesis = block.number;
 		last_reward_block = block.number;
+		renounceRole(INIT, msg.sender);
 	}
 
+	/** @param amount The amount of Dogeshit to stake. Note 1 dSHT = 1000000000
+			@notice This function will stake the specified amount of Dogeshit.
+	*/
 	function deposit_stake(uint256 amount) public {
 		distribute();
 		stake[msg.sender] = stake[msg.sender] + amount;
@@ -35,6 +58,10 @@ contract ShitFountain {
 		total_stake = total_stake + amount;
 	}
 
+	/** @notice This function will calculate the current reward per token. This doesn't send any token, it simply updates the values used
+				to calculate what is required to be sent. This is called before any stake is deposited, withdrawn, or rewards are claimed.
+				So while you can call this function if you choose to do so, you'll simply spend gas on an operation that should be handled when it is needed to be.
+	*/
 	function distribute() public {
 		if (total_stake == 0) {
 			reward_per_token = 0;
@@ -54,6 +81,13 @@ contract ShitFountain {
 		}
 	}
 
+	/** @param account The address of the account to see the currently unclaimed rewards.
+			@return uint256  The amount of unclaimed rewards for the given account.
+			@notice Get the amount of unclaimed rewards for the given account.
+			@dev This view assumes that <code>distribute</code> has not been called, and should be used
+					for displaying the unclaimed rewards publically. This avoids needlessly updating the state
+					to simply see the outstanding rewards.
+	*/
 	function unclaimed_reward(address account) public view returns (uint256) {
 		/*
 		if ( total_stake == 0 ) {
@@ -73,20 +107,27 @@ contract ShitFountain {
 		- reward_tally[account] : 0;
 	}
 
-	function compute_reward(address account) public view returns (uint256) {
+	/** @param account The address of the account to compute the reward for.
+			@return uint256  The amount of the reward for the given account.
+			@dev This view is used internally and assumes that <code>distribute</code> has already been called.
+	*/
+	function compute_reward(address account) internal view returns (uint256) {
 		return (stake[account].decimalToPreciseDecimal().multiplyDecimalRoundPrecise(reward_per_token)).preciseDecimalToDecimal() - reward_tally[account];
 	}
 
+	/** @notice This function will withdraw any rewards currently outstanding to the sender address */
 	function withdraw_rewards() public {
 		distribute();
 		uint256 reward = compute_reward(msg.sender);
 		if ( reward > 0 ) {
 			reward_tally[msg.sender] = (stake[msg.sender].decimalToPreciseDecimal().multiplyDecimalRoundPrecise(reward_per_token)).preciseDecimalToDecimal();
 			DogeShit.mint(msg.sender, reward);
-			//DogeShit.transfer(msg.sender, reward);
 		}
 	}
 
+	/** @param amount The amount of Dogeshit stake to withdraw. Note 1 dSHT = 1000000000
+			@notice This function will withdraw the specified amount of Dogeshit stake (and any unclaimed rewards) to the sender address.
+	*/
 	function withdraw_stake(uint256 amount) public {
 		require(amount <= stake[msg.sender], "Amount requested is more than currently staked.");
 		withdraw_rewards();
@@ -96,6 +137,9 @@ contract ShitFountain {
 		DogeShit.transfer(msg.sender, amount);
 	}
 
+	/** @notice The total amount of rewards that will be distributed to the pool with each block.
+			@return uint256  The current total number of rewards per block.
+	*/
 	function reward_per_block() public view returns (uint256) {
 		if ( block.number - genesis < 0 ) {
 			return 0;

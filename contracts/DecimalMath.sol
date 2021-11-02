@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 // Ported from https://github.com/Synthetixio/synthetix/blob/master/contracts/SafeDecimalMath.sol
