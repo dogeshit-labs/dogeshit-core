@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 import "./interfaces/IDogeShit.sol";
 import "./DecimalMath.sol";
@@ -13,7 +13,7 @@ import "./DecimalMath.sol";
 			with the Decimal representation having 9 decimal places, and the PreciseDecimal representation having 24 decimal
 			places.
 */
-contract ShitFountain is AccessControl {
+contract ShitFountain is AccessControlEnumerable {
 
 	using DecimalMath for uint256;
 

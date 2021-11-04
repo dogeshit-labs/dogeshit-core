@@ -1,6 +1,9 @@
 const ShitLord = artifacts.require("ShitLord");
 const DogeShit = artifacts.require("DogeShit");
 const FakeDoge = artifacts.require("FakeDoge");
+const OtherDoge = artifacts.require("OtherDoge");
+
+const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const DEFAULT_ADMIN_ROLE = web3.utils.asciiToHex("0");
 const INIT_ROLE = web3.utils.soliditySha3("INIT");
@@ -38,4 +41,46 @@ contract("ShitLord initialization", async (accounts) => {
           "The number of init accounts was more than 1"
         );
       }));
+  it("First supported doge should be 'FakeDoge'", async () => {
+    let fakeDogeAddress;
+
+    FakeDoge.deployed().then((instance) => {
+      fakeDogeAddress = instance.address;
+    });
+
+    return ShitLord.deployed()
+      .then((instance) => instance.doge_contracts(0))
+      .then((doge0) => {
+        assert.equal(
+          doge0,
+          fakeDogeAddress,
+          "The first supported doge address was not the address of FakeDoge"
+        );
+      });
+  });
+  it("Second supported doge should be 'OtherDoge'", async () => {
+    let otherDogeAddress;
+
+    OtherDoge.deployed().then((instance) => {
+      otherDogeAddress = instance.address;
+    });
+
+    return ShitLord.deployed()
+      .then((instance) => instance.doge_contracts(1))
+      .then((doge1) => {
+        assert.equal(
+          doge1,
+          otherDogeAddress,
+          "The second supported doge address was not the address of OtherDoge"
+        );
+      });
+  });
+  it("Third supported doge should be revert", async () => {
+    ShitLord.deployed().then((instance) => {
+      expectRevert(
+        instance.doge_contracts(2),
+        "Uncaught Error: Returned error: VM Exception while processing transaction: revert"
+      );
+    });
+  });
 });
