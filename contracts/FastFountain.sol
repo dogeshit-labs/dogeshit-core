@@ -61,11 +61,11 @@ contract FastFountain is AccessControlEnumerable {
 			@notice This function will stake the specified amount of Dogeshit.
 	*/
 	function deposit_stake(uint amount) public {
+		distribute();
 		stake[msg.sender] = stake[msg.sender] + amount;
 		DogeShit.transferFrom(msg.sender, address(this), amount);
 		total_stake = total_stake + amount;
 		reward_tally[msg.sender] = reward_tally[msg.sender] + reward_per_token.multiplyDecimalRoundPrecise(amount.decimalToPreciseDecimal());
-		distribute();
 	}
 
 	/** @notice This function will calculate the current reward per token. This doesn't send any token, it simply updates the values used
@@ -73,10 +73,10 @@ contract FastFountain is AccessControlEnumerable {
 				So while you can call this function if you choose to do so, you'll simply spend gas on an operation that should be handled when it is needed to be.
 	*/
 	function distribute() public {
-		if (total_stake == 0) {
+		if (total_stake == 0 || last_reward_block == 0) {
 			reward_per_token = 0;
 		}
-		if ( last_reward_block < block.number) {
+		else if ( last_reward_block < block.number) {
 			/*
 			uint256 rpb = reward_per_block();
 		  uint256 blocks = block.number - last_reward_block;
@@ -193,7 +193,7 @@ contract FastFountain is AccessControlEnumerable {
 	/** @notice The total amount of rewards that will be distributed to the pool with each block.
 			@return uint256  The current total number of rewards per block.
 	*/
-	function current_reward_per_block() public view returns (uint) {
+	function reward_per_block() public view returns (uint) {
 		int blockNum = current_block();
 		uint blockVal = uint(blockNum);
 		if (blockNum < 0) {

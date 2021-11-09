@@ -25,7 +25,22 @@ const fountainRewards = [
   2000000000,
   1000000000,
 ];
-const fastFoutainCutoffs = [
+const fountainCutoffs = [
+  3000000,
+  6000000,
+  9000000,
+  12000000,
+  15000000,
+  17400000,
+  34800000,
+  55000000,
+  75000000,
+  100000000,
+  125000000,
+  150000000,
+  200000000,
+];
+const fastFountainCutoffs = [
   30,
   60,
   90,
@@ -40,6 +55,7 @@ const fastFoutainCutoffs = [
   1500,
   2000,
 ];
+const fountainDelay = 0;
 const fastFountainDelay = 0;
 
 module.exports = async function(deployer, network, accounts) {
@@ -65,14 +81,19 @@ module.exports = async function(deployer, network, accounts) {
       otherDoge.address,
     ]);
     let fastLord = await FastLord.deployed();
-    await deployer.deploy(ShitFountain);
+    await deployer.deploy(
+      ShitFountain,
+      fountainRewards,
+      fountainCutoffs,
+      fountainDelay
+    );
     let shitFountain = await ShitFountain.deployed();
     await deployer.deploy(DogeShit, shitLord.address, shitFountain.address);
     let dogeShit = await DogeShit.deployed();
     await deployer.deploy(
       FastFountain,
       fountainRewards,
-      fastFoutainCutoffs,
+      fastFountainCutoffs,
       fastFountainDelay
     );
     let fastFountain = await FastFountain.deployed();
