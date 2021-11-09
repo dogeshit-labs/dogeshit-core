@@ -78,13 +78,6 @@ contract ShitFountain is AccessControlEnumerable {
 			reward_per_token = 0;
 		}
 		else if ( last_reward_block < block.number) {
-			/*
-			uint256 rpb = reward_per_block();
-		  uint256 blocks = block.number - last_reward_block;
-		  uint256 rewards = blocks*rpb;
-			uint256 preciseNewRewards = rewards.divideDecimalRoundPrecise(total_stake);
-		  reward_per_token = reward_per_token + preciseNewRewards;
-			*/
 		 	uint outstanding_rewards = pending_rewards();
 			reward_per_token = reward_per_token + outstanding_rewards.decimalToPreciseDecimal().divideDecimalRoundPrecise(total_stake.decimalToPreciseDecimal());
 		}
@@ -135,8 +128,10 @@ contract ShitFountain is AccessControlEnumerable {
 		DogeShit.transfer(msg.sender, amount);
 	}
 
-
-	function pending_rewards() public view returns (uint) {
+	/** @dev This is used to get the total number of pending rewards
+			@return uint  The total number of pending rewards
+	*/
+	function pending_rewards() private view returns (uint) {
 		uint currentRate;
 		uint currentBlocks;
 		uint prevRate;
@@ -145,6 +140,7 @@ contract ShitFountain is AccessControlEnumerable {
 		return currentRate*currentBlocks + prevRate*prevBlocks;
 	}
 
+	/** @dev This function gives back all the information needed to calucluate the pending_rewards */
 	function reward_information() private view returns (uint, uint, uint, uint) {
 		uint blocksPrev;
 		uint blocksCurrent;
@@ -166,6 +162,9 @@ contract ShitFountain is AccessControlEnumerable {
 		return (rewards[rewards_timeline.length - 1], blocksCurrent, rewards[rewards_timeline.length - 2], blocksPrev);
 	}
 
+	/** @dev This function gives back how many blocks have outstanding rewards before, and after the cutoff
+			@param last_cutoff  The last past cutoff value
+	*/
 	function blocks_award_split(uint last_cutoff) public view returns (uint, uint) {
 		int blockNum = current_block();
 		uint blockVal = uint(blockNum);
@@ -180,6 +179,7 @@ contract ShitFountain is AccessControlEnumerable {
 		return (blocksSince, 0);
 	}
 
+	/** @dev The number of blocks since the last reward */
 	function blocks_since_last_reward() private view returns (uint) {
 		if (last_reward_block == 0) {
 			return 0;
@@ -187,6 +187,7 @@ contract ShitFountain is AccessControlEnumerable {
 		return block.number - last_reward_block;
 	}
 
+	/** @dev The number of blocks given the rewards context */
 	function current_block() public view returns (int) {
 		return int(block.number - (genesis + rewards_delay));
 	}

@@ -1,16 +1,12 @@
 {
   "dependencies": {
-    "@harmony-js/utils": "^0.1.56",
+    "@harmony-js/core": "^0.1.57",
     "@openzeppelin/contracts": "^4.3.2",
-    "@truffle/hdwallet-provider": "^1.4.1",
-    "path": "^0.12.7",
-    "tslib": "^2.2.0"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@harmony-js/core": "^0.1.57",
     "@openzeppelin/test-helpers": "^0.5.15",
-    "dotenv": "^10.0.0",
-    "solc": "^0.8.4",
-    "solhint": "^3.3.6"
+    "@truffle/hdwallet-provider": "^1.6.0",
+    "dotenv": "^10.0.0"
   }
 }
