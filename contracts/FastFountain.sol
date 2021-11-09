@@ -19,25 +19,32 @@ contract FastFountain is AccessControlEnumerable {
 
 	IDogeShit public DogeShit;
 
-	uint256 public genesis;
+	uint public genesis;
+	uint public last_reward_block = 0; // int
 	uint256 public total_stake = 0; // int
-	uint256 public last_reward_block = 0; // int
 	uint256 public reward_per_token = 0; // PreciseDecimal
 
 	mapping(address => uint256) public stake; // int
 	mapping(address => uint256) public reward_tally; //int
 
-	uint256[13] public rewards = [9696000000000, 6969000000000, 3693000000000, 1337000000000, 420000000000, 69000000000, 42000000000, 13000000000, 9000000000, 6000000000, 4000000000, 2000000000, 1000000000];
-	uint256[13] public rewards_timeline = [30, 60, 90, 120, 150, 174, 348, 550, 750, 1000, 1250, 1500, 2000];
-	uint256 public rewards_delay = 0;
+	uint[] public rewards;
+	uint[] public rewards_timeline;
+	uint public rewards_delay;
 
 	bytes32 public constant INIT = keccak256("INIT");
 
 	/** @dev The sender will be granted with the INIT role. <code>init_shit</code> should be called immediately
 				after the Dogeshit contract is deployed. Doing so will renounce this role.
 	*/
-	constructor() {
+	constructor(uint[] memory _reward_rates, uint[] memory _block_cutoffs, uint rewards_delay_blocks) {
 		_setupRole(INIT, msg.sender);
+		require(_reward_rates.length == _block_cutoffs.length, "The cutoffs and reward rates need to be the same length.");
+		for (uint i=0; i < _reward_rates.length; i++) {
+			rewards.push(_reward_rates[i]);
+			rewards_timeline.push(_block_cutoffs[i]);
+		}
+		rewards_delay = rewards_delay_blocks;
+
 	}
 
 	/** @param shit_address The address of the Dogeshit contract.
@@ -53,7 +60,7 @@ contract FastFountain is AccessControlEnumerable {
 	/** @param amount The amount of Dogeshit to stake. Note 1 dSHT = 1000000000
 			@notice This function will stake the specified amount of Dogeshit.
 	*/
-	function deposit_stake(uint256 amount) public {
+	function deposit_stake(uint amount) public {
 		stake[msg.sender] = stake[msg.sender] + amount;
 		DogeShit.transferFrom(msg.sender, address(this), amount);
 		total_stake = total_stake + amount;
@@ -77,7 +84,7 @@ contract FastFountain is AccessControlEnumerable {
 			uint256 preciseNewRewards = rewards.divideDecimalRoundPrecise(total_stake);
 		  reward_per_token = reward_per_token + preciseNewRewards;
 			*/
-		 	uint256 outstanding_rewards = pending_rewards();
+		 	uint outstanding_rewards = pending_rewards();
 			reward_per_token = reward_per_token + outstanding_rewards.decimalToPreciseDecimal().divideDecimalRoundPrecise(total_stake.decimalToPreciseDecimal());
 		}
 		last_reward_block = block.number;
@@ -90,10 +97,10 @@ contract FastFountain is AccessControlEnumerable {
 					for displaying the unclaimed rewards publically. This avoids needlessly updating the state
 					to simply see the outstanding rewards.
 	*/
-	function unclaimed_reward(address account) public view returns (uint256) {
-	 uint256 outstanding_rewards = pending_rewards();
-	 uint256 _reward_per_token = reward_per_token + outstanding_rewards.decimalToPreciseDecimal().divideDecimalRoundPrecise(total_stake.decimalToPreciseDecimal());
-	 uint256 _total_rewards = stake[account].decimalToPreciseDecimal().multiplyDecimalRoundPrecise(_reward_per_token);
+	function unclaimed_reward(address account) public view returns (uint) {
+	 uint outstanding_rewards = pending_rewards();
+	 uint _reward_per_token = reward_per_token + outstanding_rewards.decimalToPreciseDecimal().divideDecimalRoundPrecise(total_stake.decimalToPreciseDecimal());
+	 uint _total_rewards = stake[account].decimalToPreciseDecimal().multiplyDecimalRoundPrecise(_reward_per_token);
 	 return (_total_rewards - reward_tally[account]).preciseDecimalToDecimal();
 	}
 
@@ -101,14 +108,14 @@ contract FastFountain is AccessControlEnumerable {
 			@return uint256  The amount of the reward for the given account.
 			@dev This view is used internally and assumes that <code>distribute</code> has already been called.
 	*/
-	function compute_reward(address account) internal view returns (uint256) {
+	function compute_reward(address account) internal view returns (uint) {
 		return (stake[account].decimalToPreciseDecimal().multiplyDecimalRoundPrecise(reward_per_token) - reward_tally[account]).preciseDecimalToDecimal();
 	}
 
 	/** @notice This function will withdraw any rewards currently outstanding to the sender address */
 	function withdraw_rewards() public {
 		distribute();
-		uint256 reward = compute_reward(msg.sender);
+		uint reward = compute_reward(msg.sender);
 		if ( reward > 0 ) {
 			reward_tally[msg.sender] = stake[msg.sender].decimalToPreciseDecimal().multiplyDecimalRoundPrecise(reward_per_token);
 			DogeShit.mint(msg.sender, reward);
@@ -118,7 +125,7 @@ contract FastFountain is AccessControlEnumerable {
 	/** @param amount The amount of Dogeshit stake to withdraw. Note 1 dSHT = 1000000000
 			@notice This function will withdraw the specified amount of Dogeshit stake (and any unclaimed rewards) to the sender address.
 	*/
-	function withdraw_stake(uint256 amount) public {
+	function withdraw_stake(uint amount) public {
 		require(amount <= stake[msg.sender], "Amount requested is more than currently staked.");
 		withdraw_rewards();
 		stake[msg.sender] = stake[msg.sender] - amount;
@@ -128,20 +135,20 @@ contract FastFountain is AccessControlEnumerable {
 	}
 
 
-	function pending_rewards() public view returns (uint256) {
-		uint256 currentRate;
-		uint256 currentBlocks;
-		uint256 prevRate;
-		uint256 prevBlocks;
+	function pending_rewards() public view returns (uint) {
+		uint currentRate;
+		uint currentBlocks;
+		uint prevRate;
+		uint prevBlocks;
 		(currentRate, currentBlocks, prevRate, prevBlocks) = reward_information();
 		return currentRate*currentBlocks + prevRate*prevBlocks;
 	}
 
-	function reward_information() private view returns (uint256, uint256, uint256, uint256) {
-		uint256 blocksPrev;
-		uint256 blocksCurrent;
-		int256 blockNum = current_block();
-		uint256 blockVal = uint(blockNum);
+	function reward_information() private view returns (uint, uint, uint, uint) {
+		uint blocksPrev;
+		uint blocksCurrent;
+		int blockNum = current_block();
+		uint blockVal = uint(blockNum);
 		if (blockNum < 0) {
 			return (0, 0, 0, 0);
 		}
@@ -158,37 +165,37 @@ contract FastFountain is AccessControlEnumerable {
 		return (rewards[rewards_timeline.length - 1], blocksCurrent, rewards[rewards_timeline.length - 2], blocksPrev);
 	}
 
-	function blocks_award_split(uint256 last_cutoff) public view returns (uint256, uint256) {
-		int256 blockNum = current_block();
-		uint256 blockVal = uint(blockNum);
+	function blocks_award_split(uint last_cutoff) public view returns (uint, uint) {
+		int blockNum = current_block();
+		uint blockVal = uint(blockNum);
 		if (blockNum < 0) {
 			return (0, 0);
 		}
-		uint256 blocksSince = blocks_since_last_reward();
-		uint256 blocksAfterCutoff = blockVal - last_cutoff;
+		uint blocksSince = blocks_since_last_reward();
+		uint blocksAfterCutoff = blockVal - last_cutoff;
 		if (blocksAfterCutoff < blocksSince) {
 			return (blocksAfterCutoff, blocksSince - blocksAfterCutoff);
 		}
 		return (blocksSince, 0);
 	}
 
-	function blocks_since_last_reward() private view returns (uint256) {
+	function blocks_since_last_reward() private view returns (uint) {
 		if (last_reward_block == 0) {
 			return 0;
 		}
 		return block.number - last_reward_block;
 	}
 
-	function current_block() public view returns (int256) {
-		return int256(block.number - (genesis + rewards_delay));
+	function current_block() public view returns (int) {
+		return int(block.number - (genesis + rewards_delay));
 	}
 
 	/** @notice The total amount of rewards that will be distributed to the pool with each block.
 			@return uint256  The current total number of rewards per block.
 	*/
 	function current_reward_per_block() public view returns (uint) {
-		int256 blockNum = current_block();
-		uint256 blockVal = uint(blockNum);
+		int blockNum = current_block();
+		uint blockVal = uint(blockNum);
 		if (blockNum < 0) {
 			return 0;
 		}

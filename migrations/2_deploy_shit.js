@@ -10,6 +10,38 @@ const FastLord = artifacts.require("FastLord");
 const FastShit = artifacts.require("FastShit");
 const BlockMiner = artifacts.require("BlockMiner");
 
+const fountainRewards = [
+  9696000000000,
+  6969000000000,
+  3693000000000,
+  1337000000000,
+  420000000000,
+  69000000000,
+  42000000000,
+  13000000000,
+  9000000000,
+  6000000000,
+  4000000000,
+  2000000000,
+  1000000000,
+];
+const fastFoutainCutoffs = [
+  30,
+  60,
+  90,
+  120,
+  150,
+  174,
+  348,
+  550,
+  750,
+  1000,
+  1250,
+  1500,
+  2000,
+];
+const fastFountainDelay = 0;
+
 module.exports = async function(deployer, network, accounts) {
   if (
     network === "ganache" ||
@@ -37,7 +69,12 @@ module.exports = async function(deployer, network, accounts) {
     let shitFountain = await ShitFountain.deployed();
     await deployer.deploy(DogeShit, shitLord.address, shitFountain.address);
     let dogeShit = await DogeShit.deployed();
-    await deployer.deploy(FastFountain);
+    await deployer.deploy(
+      FastFountain,
+      fountainRewards,
+      fastFoutainCutoffs,
+      fastFountainDelay
+    );
     let fastFountain = await FastFountain.deployed();
     await deployer.deploy(FastShit, fastLord.address, fastFountain.address);
     let fastShit = await FastShit.deployed();
