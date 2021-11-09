@@ -102,17 +102,21 @@ contract("Dogeshit intialization", async (accounts) => {
         );
       });
   });
-  it("Deployer minting attempt fails", async () =>
-    Dogeshit.deployed().then((instance) => {
-      let roleMessage =
-        "AccessControl: account " +
-        accounts[0].toLowerCase() +
-        " is missing role " +
-        MINTING_ROLE +
-        ".";
-      expectRevert(
-        instance.mint(accounts[0], 696969 * 10 ** 9),
-        makeRoleRevertMessage(accounts[0], MINTING_ROLE)
-      );
-    }));
+  it("Deployer minting attempt fails", async () => {
+    let dogeShit = await Dogeshit.deployed();
+    let dogeShitInitSupply = await dogeShit.totalSupply();
+
+    await expectRevert(
+      dogeShit.mint(accounts[0], 696969 * 10 ** 9),
+      makeRoleRevertMessage(accounts[0], MINTING_ROLE)
+    );
+
+    let dogeShitPostSupply = await dogeShit.totalSupply();
+
+    assert.equal(
+      dogeShitInitSupply.toNumber(),
+      dogeShitPostSupply.toNumber(),
+      "Dogeshit was minted anyways."
+    );
+  });
 });

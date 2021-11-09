@@ -4,7 +4,7 @@ contract("BlockMiner works as expected", async (accounts) => {
   it("Should mine ahead 25 blocks", async () => {
     let startingBlock = await web3.eth.getBlockNumber();
 
-    mineBlocks(accounts[0], 25).then(() => {
+    await mineBlocks(accounts[0], 25).then(() => {
       return web3.eth
         .getBlockNumber()
         .then((currentBlock) =>

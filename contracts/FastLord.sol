@@ -11,7 +11,7 @@ import "./interfaces/IDogeShit.sol";
 		@notice Contract responsible for converting bridged Doge into Dogeshit.
 		@dev The deployer will be granted an INIT role on construction. This will be renounced once the <code>set_dogeshit</code> method is called.
 */
-contract ShitLord is AccessControlEnumerable, Ownable {
+contract FastLord is AccessControlEnumerable, Ownable {
 
 	address public timelock;
 	address public constant pit = 0x7bDeF7Bdef7BDeF7BDEf7bDef7bdef7bdeF6E7AD;

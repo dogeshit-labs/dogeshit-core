@@ -22,4 +22,8 @@ function makeRoleRevertMessage(account, role) {
   );
 }
 
-module.exports = { makeRoleRevertMessage, mineBlocks };
+function rewardPerBlock(stake, total) {
+  return (stake / total) * 9696 * 10 ** 9;
+}
+
+module.exports = { makeRoleRevertMessage, mineBlocks, rewardPerBlock };
