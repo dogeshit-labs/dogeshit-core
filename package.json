@@ -1,12 +1,20 @@
 {
   "dependencies": {
+    "@babel/core": "^7.0.0",
     "@harmony-js/core": "^0.1.57",
     "@openzeppelin/contracts": "^4.3.2",
-    "tslib": "^2.3.1"
+    "ansi-regex": "^5.0.1",
+    "glob-parent": "^5.1.2",
+    "mem": "^4.0.0",
+    "node-fetch": "^2.6.1",
+    "set-value": "^4.0.1",
+    "tslib": "^2.3.1",
+    "yargs-parser": "^13.1.2"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.15",
     "@truffle/hdwallet-provider": "^1.6.0",
+    "bn.js": "^4.11.0",
     "dotenv": "^10.0.0"
   }
 }
